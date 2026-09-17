@@ -1,0 +1,11 @@
+default_permissions = "workspace-no-env"
+
+[permissions.workspace-no-env]
+description = "Normal workspace access with environment files kept private."
+extends = ":workspace"
+
+[permissions.workspace-no-env.filesystem.":workspace_roots"]
+".env" = "deny"
+".env.*" = "deny"
+"**/.env" = "deny"
+"**/.env.*" = "deny"
