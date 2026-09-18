@@ -15,6 +15,11 @@
   justify their simulation and control approach.
 -->
 <robot name="dummy_character_lamp_5dof">
+  <!-- Keep visual meshes when MuJoCo imports this URDF. -->
+  <mujoco>
+    <compiler discardvisual="false" balanceinertia="true"/>
+  </mujoco>
+
   <material name="fixture_white">
     <color rgba="0.94 0.94 0.95 1.0"/>
   </material>
@@ -265,7 +270,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="assets/lamp_shade.stl"/>
+        <mesh filename="assets/lamp_shade_binary.stl"/>
       </geometry>
       <material name="fixture_white"/>
     </visual>

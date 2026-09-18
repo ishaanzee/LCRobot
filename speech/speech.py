@@ -8,12 +8,28 @@ import numpy as np
 import sounddevice as sd
 from groq import Groq
 
+from character.audio import AUDIO_LOCK
+
+
+def load_api_key(env_path):
+    """Read only GROQ_API_KEY from the project's simple .env file."""
+    if not env_path.exists():
+        return None
+
+    with env_path.open(encoding="utf-8") as env_file:
+        for line in env_file:
+            name, separator, value = line.partition("=")
+            if separator and name.strip() == "GROQ_API_KEY":
+                return value.strip().strip("'\"")
+    return None
+
 
 class Speech:
-    def __init__(self, record_seconds=5):
-        api_key = os.getenv("GROQ_API_KEY")
+    def __init__(self, record_seconds=3):
+        project_env = Path(__file__).resolve().parents[1] / ".env"
+        api_key = os.getenv("GROQ_API_KEY") or load_api_key(project_env)
         if not api_key:
-            raise RuntimeError("Set GROQ_API_KEY before using speech.")
+            raise RuntimeError("Add GROQ_API_KEY to the project .env file.")
 
         self.client = Groq(api_key=api_key)
         self.record_seconds = record_seconds
@@ -21,13 +37,14 @@ class Speech:
 
     def listen(self):
         print(f"Listening for {self.record_seconds} seconds...")
-        recording = sd.rec(
-            int(self.record_seconds * self.sample_rate),
-            samplerate=self.sample_rate,
-            channels=1,
-            dtype="int16",
-        )
-        sd.wait()
+        with AUDIO_LOCK:
+            recording = sd.rec(
+                int(self.record_seconds * self.sample_rate),
+                samplerate=self.sample_rate,
+                channels=1,
+                dtype="int16",
+            )
+            sd.wait()
 
         audio = io.BytesIO()
         with wave.open(audio, "wb") as wav_file:
@@ -61,7 +78,8 @@ class Speech:
         with tempfile.TemporaryDirectory() as temp_dir:
             audio_path = Path(temp_dir) / "speech.wav"
             response.write_to_file(audio_path)
-            self._play_wav(audio_path)
+            with AUDIO_LOCK:
+                self._play_wav(audio_path)
 
     def _play_wav(self, audio_path):
         with wave.open(str(audio_path), "rb") as wav_file:

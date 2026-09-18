@@ -1,0 +1,8 @@
+groq==1.7.0
+mediapipe==0.10.35
+numpy==2.5.3
+opencv-python==5.0.0.93
+mujoco==3.13.0
+rfdetr==1.10.1
+sounddevice==0.5.6
+supervision==0.30.3
